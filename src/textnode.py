@@ -41,3 +41,25 @@ def text_node_to_html_node(text_node) -> LeafNode:
     if text_node.text_type == text_type_image:
         return LeafNode("img", "", {"src": text_node.url, "alt": text_node.text})
     raise ValueError(f"Invalid text type: {text_node.text_type}")
+
+
+def split_nodes_delimiter(old_nodes, delimiter, text_type) -> list:
+    new_nodes = []
+    for old_node in old_nodes:
+        text = old_node.text
+        if text.count(delimiter) % 2 != 0:
+            raise Exception("Invalid Markdown syntax")
+        sections = text.split(delimiter)
+        for i in range(len(sections)):
+            if sections[i] == "":
+                continue
+            if i % 2 == 0:
+                new_nodes.append(TextNode(sections[i], old_node.text_type))
+            else:
+                new_nodes.append(TextNode(sections[i], text_type))
+    return new_nodes
+
+
+node = TextNode("This is text with a `code block` word", text_type_text)
+new_nodes = split_nodes_delimiter([node], "`", text_type_code)
+print(new_nodes)
