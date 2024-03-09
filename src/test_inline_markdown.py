@@ -3,14 +3,18 @@ import unittest
 from inline_markdown import (
     split_nodes_delimiter,
     extract_markdown_images,
-    extract_markdown_link
+    extract_markdown_link,
+    split_nodes_link,
+    split_nodes_image
 )
 from textnode import (
     TextNode,
     text_type_text,
     text_type_bold,
     text_type_italic,
-    text_type_code
+    text_type_code,
+    text_type_image,
+    text_type_link
 )
 
 
@@ -122,6 +126,61 @@ class TestMarkdownExtraction(unittest.TestCase):
         expected_link = [("link", "http://example.com")]
         self.assertEqual(extract_markdown_images(text), expected_image)
         self.assertEqual(extract_markdown_link(text), expected_link)
+
+
+class TestSplitNodesExtended(unittest.TestCase):
+
+    def test_split_nodes_image_empty_string(self):
+        original_nodes = [TextNode("", text_type_text)]
+        expected_nodes = []
+        result_nodes = split_nodes_image(original_nodes)
+        self.assertEqual(result_nodes, expected_nodes)
+
+    def test_split_nodes_image_multiple_images(self):
+        original_nodes = [TextNode("![alt1](http://example.com/image1.jpg) ![alt2](http://example.com/image2.jpg)", text_type_text)]
+        expected_nodes = [
+            TextNode("alt1", text_type_image, "http://example.com/image1.jpg"),
+            TextNode(" ", text_type_text),
+            TextNode("alt2", text_type_image, "http://example.com/image2.jpg")
+        ]
+        result_nodes = split_nodes_image(original_nodes)
+        self.assertEqual(result_nodes, expected_nodes)
+
+    def test_split_nodes_image_mixed_content(self):
+        original_nodes = [TextNode("Text ![alt](http://example.com/image.jpg) more text", text_type_text)]
+        expected_nodes = [
+            TextNode("Text ", text_type_text),
+            TextNode("alt", text_type_image, "http://example.com/image.jpg"),
+            TextNode(" more text", text_type_text)
+        ]
+        result_nodes = split_nodes_image(original_nodes)
+        self.assertEqual(result_nodes, expected_nodes)
+
+    def test_split_nodes_link_empty_string(self):
+        original_nodes = [TextNode("", text_type_text)]
+        expected_nodes = []
+        result_nodes = split_nodes_link(original_nodes)
+        self.assertEqual(result_nodes, expected_nodes)
+
+    def test_split_nodes_link_multiple_links(self):
+        original_nodes = [TextNode("[link1](http://example1.com) [link2](http://example2.com)", text_type_text)]
+        expected_nodes = [
+            TextNode("link1", text_type_link, "http://example1.com"),
+            TextNode(" ", text_type_text),
+            TextNode("link2", text_type_link, "http://example2.com")
+        ]
+        result_nodes = split_nodes_link(original_nodes)
+        self.assertEqual(result_nodes, expected_nodes)
+
+    def test_split_nodes_link_mixed_content(self):
+        original_nodes = [TextNode("Text before [link](http://example.com) text after", text_type_text)]
+        expected_nodes = [
+            TextNode("Text before ", text_type_text),
+            TextNode("link", text_type_link, "http://example.com"),
+            TextNode(" text after", text_type_text)
+        ]
+        result_nodes = split_nodes_link(original_nodes)
+        self.assertEqual(result_nodes, expected_nodes)
 
 
 if __name__ == '__main__':

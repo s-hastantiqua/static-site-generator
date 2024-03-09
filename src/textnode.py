@@ -17,6 +17,9 @@ class TextNode():
         self.url = url
 
     def __eq__(self, __value: object) -> bool:
+        if not isinstance(__value, TextNode):
+            return NotImplemented
+        
         return (
             self.text == __value.text
             and self.text_type == __value.text_type

@@ -7,7 +7,7 @@ class HTMLNode():
         self.props = props
 
     def __eq__(self, __value: object) -> bool:
-        if not isinstance(__value, LeafNode):
+        if not isinstance(__value, HTMLNode):
             return NotImplemented
         
         return(
@@ -63,7 +63,7 @@ class ParentNode(HTMLNode):
         super().__init__(tag, None, children, props)
 
     def __eq__(self, __value: object) -> bool:
-        if not isinstance(__value, LeafNode):
+        if not isinstance(__value, ParentNode):
             return NotImplemented
         
         return(
