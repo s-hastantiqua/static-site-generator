@@ -1,11 +1,12 @@
 import unittest
 
 from inline_markdown import (
-    split_nodes_delimiter,
     extract_markdown_images,
     extract_markdown_link,
+    split_nodes_delimiter,
     split_nodes_link,
-    split_nodes_image
+    split_nodes_image,
+    text_to_textnodes
 )
 from textnode import (
     TextNode,
@@ -181,6 +182,93 @@ class TestSplitNodesExtended(unittest.TestCase):
         ]
         result_nodes = split_nodes_link(original_nodes)
         self.assertEqual(result_nodes, expected_nodes)
+
+
+class TestTextToTextNodes(unittest.TestCase):
+
+    def test_plain_text(self):
+        text = "This is plain text."
+        expected = [TextNode("This is plain text.", text_type_text)]
+        self.assertEqual(text_to_textnodes(text), expected)
+
+    def test_bold_text(self):
+        text = "This is **bold** text."
+        expected = [TextNode("This is ", text_type_text), TextNode("bold", text_type_bold), TextNode(" text.", text_type_text)]
+        self.assertEqual(text_to_textnodes(text), expected)
+
+    def test_italic_text(self):
+        text = "This is *italic* text."
+        expected = [TextNode("This is ", text_type_text), TextNode("italic", text_type_italic), TextNode(" text.", text_type_text)]
+        self.assertEqual(text_to_textnodes(text), expected)
+
+    def test_code_text(self):
+        text = "This is `code` text."
+        expected = [TextNode("This is ", text_type_text), TextNode("code", text_type_code), TextNode(" text.", text_type_text)]
+        self.assertEqual(text_to_textnodes(text), expected)
+
+    def test_image(self):
+        text = "This is ![alt text](http://example.com/image.jpg) in text."
+        expected = [TextNode("This is ", text_type_text), TextNode("alt text", text_type_image, "http://example.com/image.jpg"), TextNode(" in text.", text_type_text)]
+        self.assertEqual(text_to_textnodes(text), expected)
+
+    def test_link(self):
+        text = "This is [link text](http://example.com) in text."
+        expected = [TextNode("This is ", text_type_text), TextNode("link text", text_type_link, "http://example.com"), TextNode(" in text.", text_type_text)]
+        self.assertEqual(text_to_textnodes(text), expected)
+
+    def test_combined_markdown_elements(self):
+        text = "**Bold**, *italic*, `code`, ![alt](http://image.com), [link](http://link.com)."
+        expected = [
+            TextNode("Bold", text_type_bold), TextNode(", ", text_type_text),
+            TextNode("italic", text_type_italic), TextNode(", ", text_type_text),
+            TextNode("code", text_type_code), TextNode(", ", text_type_text),
+            TextNode("alt", text_type_image, "http://image.com"), TextNode(", ", text_type_text),
+            TextNode("link", text_type_link, "http://link.com"), TextNode(".", text_type_text)
+        ]
+        self.assertEqual(text_to_textnodes(text), expected)
+
+    def test_nested_bold_italic(self):
+        text = "This is **bold and *italic* text**."
+        expected = [
+            TextNode("This is ", text_type_text),
+            TextNode("bold and ", text_type_bold),
+            TextNode("italic", text_type_italic),
+            TextNode(" text", text_type_bold),
+            TextNode(".", text_type_text)
+        ]
+        self.assertEqual(text_to_textnodes(text), expected)
+
+    def test_link_inside_bold(self):
+        text = "This is **bold with a [link](http://example.com)** text."
+        expected = [
+            TextNode("This is ", text_type_text),
+            TextNode("bold with a ", text_type_bold),
+            TextNode("link", text_type_link, "http://example.com"),
+            TextNode(" text.", text_type_text)
+        ]
+        self.assertEqual(text_to_textnodes(text), expected)
+
+    def test_image_inside_italic(self):
+        text = "This is *italic with an ![image](http://example.com/image.jpg)* text."
+        expected = [
+            TextNode("This is ", text_type_text),
+            TextNode("italic with an ", text_type_italic),
+            TextNode("image", text_type_image, "http://example.com/image.jpg"),
+            TextNode(" text.", text_type_text)
+        ]
+        self.assertEqual(text_to_textnodes(text), expected)
+
+    def test_complex_nesting(self):
+        text = "Here is **bold, *italic, and ![an image](http://example.com/image.jpg)* text**."
+        expected = [
+            TextNode("Here is ", text_type_text),
+            TextNode("bold, ", text_type_bold),
+            TextNode("italic, and ", text_type_italic),
+            TextNode("an image", text_type_image, "http://example.com/image.jpg"),
+            TextNode(" text", text_type_bold),
+            TextNode(".", text_type_text)
+        ]
+        self.assertEqual(text_to_textnodes(text), expected)
 
 
 if __name__ == '__main__':
