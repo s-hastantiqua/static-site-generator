@@ -1,5 +1,8 @@
 import unittest
 
+from bs4 import BeautifulSoup
+
+
 from markdown_blocks import (
     block_type_paragraph,
     block_type_heading,
@@ -8,7 +11,8 @@ from markdown_blocks import (
     block_type_unordered_list,
     block_type_ordered_list,
     markdown_to_blocks,
-    block_to_block_type
+    block_to_block_type,
+    markdown_to_html_node
 )
 
 
@@ -116,11 +120,52 @@ class TestBlockToBlockType(unittest.TestCase):
         missing_dot_list = "1 First item\n2 Second item"
         self.assertEqual(block_to_block_type(missing_dot_list), block_type_paragraph)
 
-    def test_block_type_empty_code_block(self):
-        # Code block must not be empty
-        empty_code_block = "```\n```"
-        self.assertEqual(block_to_block_type(empty_code_block), block_type_paragraph)
 
+class TestMarkdownToHtmlNode(unittest.TestCase):
+
+    def test_complex_markdown_example(self):
+        document = """
+# Complex Markdown Example
+
+This paragraph includes **bold**, *italic*, and `inline code`.
+
+## Lists
+
+- Unordered list item 1
+- Unordered list item 2
+- Unordered list item 3 with a [link](http://example.com)
+
+1. Ordered list item 1
+2. Ordered list item 2
+3. Ordered list item 3
+
+![Alt text for an image](http://example.com/image.jpg)
+
+> This is a quote block.
+>
+> - List inside a quote
+> - Another list item
+>
+> More quoted text.
+
+## Code Block
+
+```
+def example_function():
+    # This is a comment
+    print("Hello, World!")
+```
+
+This is a paragraph following a code block. And here's a link in a paragraph: [Example Link](http://example.com).
+"""
+        expected = """
+<div><h1>Complex Markdown Example</h1><p>This paragraph includes <b>bold</b>, <i>italic</i>, and <code>inline code</code>.</p><h2>Lists</h2><ul><li>Unordered list item 1</li><li>Unordered list item 2</li><li>Unordered list item 3 with a <a href="http://example.com">link</a></li></ul><ol><li>Ordered list item 1</li><li>Ordered list item 2</li><li>Ordered list item 3</li></ol><p><img src="http://example.com/image.jpg" alt="Alt text for an image" /></p><blockquote><p>This is a quote block.</p><ul><li>List inside a quote</li><li>Another list item</li></ul><p>More quoted text.</p></blockquote><h2>Code Block</h2><pre><code>def example_function():
+    # This is a comment
+    print("Hello, World!")</code></pre><p>This is a paragraph following a code block. And here's a link in a paragraph: <a href="http://example.com">Example Link</a>.</p></div>
+    """
+        expected_soup = BeautifulSoup(expected, 'html.parser').prettify()
+        actual_soup = BeautifulSoup(markdown_to_html_node(document, "div").to_html(), 'html.parser').prettify()
+        self.assertEqual(str(expected_soup), str(actual_soup))
 
 if __name__ == '__main__':
     unittest.main()

@@ -19,7 +19,7 @@ def text_to_textnodes(text) -> list:
     nodes = split_nodes_delimiter(nodes, "`", text_type_code)
     nodes = split_nodes_image(nodes)
     nodes = split_nodes_link(nodes)
-    
+
     return nodes
 
 
