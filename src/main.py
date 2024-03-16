@@ -2,12 +2,13 @@ import os
 import shutil
 
 from copystatic import copy_files_recursive
+from gencontent import generate_page
 
 script_dir = os.path.dirname(os.path.realpath(__file__))
-parent_dir = os.path.dirname(script_dir)
+project_dir = os.path.dirname(script_dir)
 
-dir_path_static = f"{parent_dir}/static"
-dir_path_public = f"{parent_dir}/public"
+dir_path_static = f"{project_dir}/static"
+dir_path_public = f"{project_dir}/public"
 
 
 def main():
@@ -17,6 +18,13 @@ def main():
 
     print("Copying static files to public directory...")
     copy_files_recursive(dir_path_static, dir_path_public)
+
+    print("Generating page...")
+    generate_page(
+        f"{project_dir}/content/index.md",
+        f"{project_dir}/template.html",
+        f"{project_dir}/public/index.html"
+    )
 
 
 if __name__ == "__main__":

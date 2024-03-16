@@ -29,7 +29,7 @@ def split_nodes_delimiter(old_nodes, delimiter, text_type) -> list:
         original_text = old_node.text
         original_text_type = old_node.text_type
         if original_text.count(delimiter) % 2 != 0:
-            raise Exception("Invalid Markdown syntax")
+            raise ValueError("Invalid Markdown syntax")
         sections = original_text.split(delimiter)
         for i in range(len(sections)):
             if sections[i] == "":

@@ -70,7 +70,7 @@ class TestSplitNodesDelimiter(unittest.TestCase):
 
     def test_split_nodes_invalid_syntax(self):
         original_nodes = [TextNode("Unbalanced `code", text_type_text)]
-        with self.assertRaises(Exception):
+        with self.assertRaises(ValueError):
             split_nodes_delimiter(original_nodes, "`", text_type_code)
 
     def test_split_nodes_empty_result(self):
